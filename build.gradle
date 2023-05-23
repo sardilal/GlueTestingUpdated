@@ -1,27 +1,40 @@
-apply plugin: 'java'
-apply plugin: 'net.serenity-bdd.aggregator'
-
-group 'co.com.bancolombia.certification.upload_files'
 version '1.0-SNAPSHOT'
 
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'net.serenity-bdd.aggregator'
+apply plugin: "org.sonarqube"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+javadoc.options.encoding = 'UTF-8'
+
 repositories {
+    maven {
+        url "https://artifactory.apps.bancolombia.com:443/maven-bancolombia/"
+    }
     mavenCentral()
 }
 
 buildscript {
+    ext{
+        serenityVersion = '3.1.0'
+        serenityCucumberVersion = '3.1.0'
+        log4jVersion = '2.17.2'
+    }
     repositories {
-        mavenCentral()
+        maven {
+            url "https://artifactory.apps.bancolombia.com:443/maven-bancolombia/"
+        }
     }
-
     dependencies {
-        classpath "net.serenity-bdd:serenity-gradle-plugin:2.0.60"
+        classpath("net.serenity-bdd:serenity-gradle-plugin:$rootProject.ext.serenityVersion")
+        classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2")
     }
-}
-
-ext{
-    serenityVersion = '3.2.5'
-    serenityCucumberVersion = '3.2.5'
-    log4jVersion = '2.17.2'
 }
 
 dependencies {
@@ -31,27 +44,26 @@ dependencies {
     implementation "net.serenity-bdd:serenity-cucumber:$rootProject.ext.serenityCucumberVersion"
     implementation "org.apache.logging.log4j:log4j-api:$rootProject.ext.log4jVersion"
     implementation "org.apache.logging.log4j:log4j-core:$rootProject.ext.log4jVersion"
+    implementation 'mysql:mysql-connector-java:8.0.27'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.slf4j:slf4j-simple:1.7.36'
-    implementation 'com.opencsv:opencsv:5.5'
-
-    implementation platform('software.amazon.awssdk:bom:2.20.20')
+    implementation platform('software.amazon.awssdk:bom:2.20.47')
     implementation 'software.amazon.awssdk:glue'
-    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:rds'
+    implementation 'software.amazon.awssdk:rdsdata'
+}
 
-    implementation "org.json:json:20220320"
+test {
+    systemProperty "file.encoding", "utf-8"
+    systemProperty "context", System.properties.getProperty("context")
+    systemProperty 'aws.accessKeyId', System.properties.getProperty('aws.accessKeyId')
+    systemProperty 'aws.secretKey', System.properties.getProperty('aws.secretKey')
+    systemProperty 'aws.sessionToken', System.properties.getProperty('aws.sessionToken')
+    systemProperty "cucumber.options", System.getProperty("cucumber.options")
+    testLogging.showStandardStreams = true
+    finalizedBy(aggregate)
 }
 
 tasks.withType(Test) {
     systemProperties = System.properties
-    systemProperty "file.encoding", "UTF-8"
-    systemProperty 'environment', System.getProperty('environment')
-    systemProperty 'workflow', System.getProperty('workflow')
-    systemProperty 'attempts', System.getProperty('attempts')
-
-    systemProperty 'aws.accessKeyId', System.properties.getProperty('aws.accessKeyId')
-    systemProperty 'aws.secretKey', System.properties.getProperty('aws.secretKey')
-    systemProperty 'aws.sessionToken', System.properties.getProperty('aws.sessionToken')
 }
-
-gradle.startParameter.continueOnFailure = true

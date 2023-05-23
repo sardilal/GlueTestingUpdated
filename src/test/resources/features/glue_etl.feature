@@ -1,9 +1,13 @@
-Feature: ETL with AWS Glue
-  I want to extract data with an aws glue crawler
-  Transform it using an AWS Glue Job
-  So i can validate it after it is loaded to an S3 Bucket
+@SDK
+Feature: Testing AWS SDK with Glue and RDS
+  As a developer, I want to test the AWS SDK with Glue and RDS tools to filter information and store it in a database.
 
-  Scenario: Transform data with glue and load it to S3
-    Given I run the aws glue crawler
-    When I run the aws glue Job
-    Then I should see the file in the S3 Bucket
+  @TestCase1
+  Scenario Outline: Make a successful data transformation with AWS Glue and store it in an RDS database
+    Given I run the AWS Glue crawler <crawler>
+    When I run the Glue Job <job> to apply the filters and store the data in an RDS database
+    Then I should be able to verify that the filtered data has been successfully stored in the RDS database.
+
+    Examples:
+      | crawler         | job        |
+      | tutorialCrawler | testVisual |

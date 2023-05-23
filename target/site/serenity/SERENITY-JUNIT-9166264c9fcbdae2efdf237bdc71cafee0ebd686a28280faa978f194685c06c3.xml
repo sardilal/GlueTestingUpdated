@@ -1,1 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><testsuite errors="0" failures="0" name="ETL with AWS Glue" skipped="1" tests="1" time="2.25" timestamp="2023-05-12 10:24:58"><testcase name="Transform data with glue and load it to S3"><skipped/></testcase></testsuite>
